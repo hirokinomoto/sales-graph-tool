@@ -1,223 +1,133 @@
 # src/app.py
-# Sales Graph Tool (Minimum)
-# CSV -> Category total bar graph -> Save PNG
-#
-# Requirements: pandas, matplotlib
-# Run: python src\app.py
-
-from __future__ import annotations
-
-import os
 import tkinter as tk
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, messagebox
 
 import pandas as pd
-
-import matplotlib
-matplotlib.use("TkAgg")  # Tkinterで表示するため
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
-REQUIRED_COLUMNS = ["date", "category", "amount"]
+APP_TITLE = "Sales Graph Tool (Minimum)"
+REQUIRED_COLS = {"date", "category", "amount"}
 
 
-class SalesGraphApp(tk.Tk):
-    def __init__(self) -> None:
+class App(tk.Tk):
+    def __init__(self):
         super().__init__()
+        self.title(APP_TITLE)
+        self.geometry("980x620")
 
-        self.title("Sales Graph Tool (Minimum)")
-        self.geometry("980x720")
+        self.csv_path = tk.StringVar(value="(未選択)")
+        self.msg = tk.StringVar(value="CSVを選択してください。")
 
-        # state
-        self.csv_path: str | None = None
-        self.df: pd.DataFrame | None = None
-        self.fig: Figure | None = None
-        self.canvas: FigureCanvasTkAgg | None = None
-        self.graph_ready: bool = False
-
-        # UI vars
-        self.csv_path_var = tk.StringVar(value="(未選択)")
-        self.msg_var = tk.StringVar(value="CSVを選択してください。")
+        self.df = None
+        self.figure = None
+        self.canvas = None
 
         self._build_ui()
 
-    # -------------------------
-    # UI
-    # -------------------------
-    def _build_ui(self) -> None:
+    def _build_ui(self):
+        # ===== Title =====
         title = ttk.Label(
             self,
-            text="売上CSV → カテゴリ別売上グラフ → PNG保存（最小版）",
+            text="売上CSV → カテゴリ別売上グラフ（最小版）",
             font=("Meiryo UI", 12, "bold"),
+            anchor="center",
         )
-        title.pack(pady=(12, 8))
+        title.pack(fill="x", pady=(10, 6))
 
-        # 入力エリア
-        frm_input = ttk.LabelFrame(self, text="入力")
-        frm_input.pack(fill="x", padx=12, pady=(0, 10))
+        # ===== Input =====
+        frame_in = ttk.LabelFrame(self, text="入力")
+        frame_in.pack(fill="x", padx=12, pady=8)
 
-        btn_select = ttk.Button(frm_input, text="CSVを選択", command=self.on_select_csv)
-        btn_select.pack(side="left", padx=10, pady=10)
+        btn_csv = ttk.Button(frame_in, text="CSVを選択", command=self.on_select_csv)
+        btn_csv.pack(side="left", padx=8, pady=10)
 
-        lbl_path = ttk.Label(frm_input, textvariable=self.csv_path_var)
-        lbl_path.pack(side="left", padx=10, pady=10, fill="x", expand=True)
+        lbl_path = ttk.Label(frame_in, textvariable=self.csv_path)
+        lbl_path.pack(side="left", padx=8, pady=10)
 
-        self.btn_create_graph = ttk.Button(frm_input, text="グラフ作成", command=self.on_create_graph)
-        self.btn_create_graph.pack(side="right", padx=10, pady=10)
+        btn_plot = ttk.Button(frame_in, text="グラフ作成", command=self.on_make_graph)
+        btn_plot.pack(side="right", padx=8, pady=10)
 
-        # グラフエリア
-        frm_graph = ttk.LabelFrame(self, text="グラフ（カテゴリ別売上 合計）")
-        frm_graph.pack(fill="both", expand=True, padx=12, pady=(0, 10))
+        # ===== Graph Area =====
+        frame_graph = ttk.LabelFrame(self, text="グラフ（カテゴリ別売上 合計）")
+        frame_graph.pack(fill="both", expand=True, padx=12, pady=8)
 
-        # 右上にPNG保存ボタン
-        top_right = ttk.Frame(frm_graph)
-        top_right.pack(fill="x", padx=8, pady=(8, 0))
-        self.btn_save_png = ttk.Button(top_right, text="PNG保存", command=self.on_save_png, state="disabled")
-        self.btn_save_png.pack(side="right")
-
-        # Matplotlibキャンバスを置く領域
-        self.graph_container = ttk.Frame(frm_graph)
+        self.graph_container = ttk.Frame(frame_graph)
         self.graph_container.pack(fill="both", expand=True, padx=8, pady=8)
 
-        # メッセージエリア
-        frm_msg = ttk.LabelFrame(self, text="メッセージ")
-        frm_msg.pack(fill="x", padx=12, pady=(0, 12))
-        lbl_msg = ttk.Label(frm_msg, textvariable=self.msg_var)
-        lbl_msg.pack(anchor="w", padx=10, pady=10)
+        # ===== Message =====
+        frame_msg = ttk.LabelFrame(self, text="メッセージ")
+        frame_msg.pack(fill="x", padx=12, pady=(0, 12))
 
-    # -------------------------
-    # Handlers
-    # -------------------------
-    def on_select_csv(self) -> None:
+        lbl_msg = ttk.Label(frame_msg, textvariable=self.msg)
+        lbl_msg.pack(fill="x", padx=8, pady=8)
+
+    def on_select_csv(self):
         path = filedialog.askopenfilename(
             title="売上CSVを選択",
             filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
         )
         if not path:
-            self.msg_var.set("CSV選択をキャンセルしました。")
             return
+        self.csv_path.set(path)
+        self.msg.set("CSVを選択しました。次は「グラフ作成」を押してください。")
 
-        self.csv_path = path
-        self.csv_path_var.set(path)
-        self.msg_var.set("CSVを選択しました。次は『グラフ作成』を押してください。")
-
-        # CSVが変わったらグラフ状態をリセット
-        self._reset_graph_state()
-
-    def on_create_graph(self) -> None:
-        if not self.csv_path:
-            self.msg_var.set("先にCSVを選択してください。")
+    def on_make_graph(self):
+        path = self.csv_path.get()
+        if not path or path == "(未選択)":
+            self.msg.set("CSVが未選択です。「CSVを選択」を押してください。")
             return
 
         try:
-            df = self._read_csv_safely(self.csv_path)
+            df = pd.read_csv(path)
         except Exception as e:
-            self.msg_var.set(f"CSVの読み込みに失敗しました: {e}")
-            self._reset_graph_state()
+            self.msg.set("CSVの読み込みに失敗しました。")
+            messagebox.showerror("CSV読み込みエラー", str(e))
             return
 
-        missing = [c for c in REQUIRED_COLUMNS if c not in df.columns]
+        # --- minimal validation ---
+        missing = REQUIRED_COLS - set(df.columns)
         if missing:
-            self.msg_var.set(f"必須列が不足しています: {', '.join(missing)}（必要: {', '.join(REQUIRED_COLUMNS)}）")
-            self._reset_graph_state()
+            self.msg.set(f"必須列が不足しています: {', '.join(sorted(missing))}")
             return
 
-        # amount を数値化（失敗したらNaN -> 0）
-        df["amount"] = pd.to_numeric(df["amount"], errors="coerce").fillna(0)
+        # amount must be numeric
+        df["amount"] = pd.to_numeric(df["amount"], errors="coerce")
+        if df["amount"].isna().any():
+            self.msg.set("amount列に数値以外が含まれています。CSVを確認してください。")
+            return
 
-        # category別に合計
-        summary = df.groupby("category", as_index=False)["amount"].sum()
+        # aggregate
+        grouped = df.groupby("category", as_index=True)["amount"].sum().sort_values(ascending=False)
 
-        # Figure作成
-        fig = Figure(figsize=(8.8, 4.6), dpi=100)
+        # draw
+        self._render_bar_chart(grouped)
+        self.msg.set("グラフを作成しました。")
+
+    def _render_bar_chart(self, series):
+        # clear previous canvas
+        for w in self.graph_container.winfo_children():
+            w.destroy()
+
+        fig = Figure(figsize=(7.5, 4.2), dpi=100)
         ax = fig.add_subplot(111)
-
-        ax.bar(summary["category"], summary["amount"])
+        ax.bar(series.index.astype(str), series.values)
         ax.set_title("Sales by Category")
         ax.set_xlabel("Category")
         ax.set_ylabel("Amount")
-        fig.tight_layout()
-
-        # 既存キャンバスがあれば破棄して差し替え
-        self._destroy_canvas_if_exists()
+        ax.tick_params(axis="x", rotation=0)
 
         canvas = FigureCanvasTkAgg(fig, master=self.graph_container)
         canvas.draw()
-        canvas_widget = canvas.get_tk_widget()
-        canvas_widget.pack(fill="both", expand=True)
+        canvas.get_tk_widget().pack(fill="both", expand=True)
 
-        # state保存（← PNG保存が動かない原因をここで潰す）
-        self.df = df
-        self.fig = fig
+        self.figure = fig
         self.canvas = canvas
-        self.graph_ready = True
-        self.btn_save_png.config(state="normal")
-
-        self.msg_var.set("グラフを作成しました。次は『PNG保存』を押せます。")
-
-    def on_save_png(self) -> None:
-        # ここが「正しい？」の答え：
-        # グラフ未作成の時は保存できない＝正しい挙動にする
-        if not self.graph_ready or self.fig is None:
-            self.msg_var.set("まだグラフがありません。先に『グラフ作成』を押してください。")
-            return
-
-        default_name = "sales_by_category.png"
-        path = filedialog.asksaveasfilename(
-            title="PNGとして保存",
-            defaultextension=".png",
-            filetypes=[("PNG", "*.png")],
-            initialfile=default_name,
-        )
-        if not path:
-            self.msg_var.set("保存をキャンセルしました。")
-            return
-
-        try:
-            # 保存（Figureを保持しているので確実）
-            self.fig.savefig(path, dpi=150, bbox_inches="tight")
-        except Exception as e:
-            self.msg_var.set(f"PNG保存に失敗しました: {e}")
-            return
-
-        self.msg_var.set(f"PNG保存しました: {os.path.basename(path)}")
-
-    # -------------------------
-    # Helpers
-    # -------------------------
-    def _reset_graph_state(self) -> None:
-        self.df = None
-        self.fig = None
-        self.graph_ready = False
-        self.btn_save_png.config(state="disabled")
-        self._destroy_canvas_if_exists()
-
-    def _destroy_canvas_if_exists(self) -> None:
-        if self.canvas is not None:
-            widget = self.canvas.get_tk_widget()
-            widget.destroy()
-            self.canvas = None
-
-        # container内に残骸が残るケースも潰す
-        for child in self.graph_container.winfo_children():
-            child.destroy()
-
-    def _read_csv_safely(self, path: str) -> pd.DataFrame:
-        """
-        Excel経由で保存されたCSVでも読めるように複数エンコードを試す。
-        """
-        last_err: Exception | None = None
-        for enc in ("utf-8-sig", "utf-8", "cp932"):
-            try:
-                return pd.read_csv(path, encoding=enc)
-            except Exception as e:
-                last_err = e
-        raise last_err or RuntimeError("CSV read failed")
 
 
-def main() -> None:
-    app = SalesGraphApp()
+def main():
+    app = App()
     app.mainloop()
 
 
