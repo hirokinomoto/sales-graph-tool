@@ -70,13 +70,11 @@ git clone <your-repo-url>
 cd sales-graph-tool
 ```
 
-### 5.2 仮想環境（.venv）作成・有効化
+### 5.2 仮想環境（.venv）作成・有効化（Windows / cmd）
 
-Windows（PowerShell）
-
-```bash
+```bat
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+.\.venv\Scripts\activate.bat
 ```
 
 ### 5.3 依存インストール
@@ -87,13 +85,9 @@ pip install -r requirements.txt
 
 ### 5.4 起動
 
-例：
-
 ```bash
 python src/app.py
 ```
-
-> ※ 実際のエントリポイント（`main.py` / `app.py` 等）はあなたの構成に合わせて修正してください。
 
 ---
 
