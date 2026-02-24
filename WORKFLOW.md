@@ -1,3 +1,4 @@
+
 # 作業ルール（毎回これを見る）
 
 このリポジトリは「自宅PC／訓練校PC」で同じ作業をする前提。
@@ -17,31 +18,39 @@
 
 - `git pull`
 
-### 3) ターミナルは cmd（コマンドプロンプト）を使う（方針）
+### 3) ターミナルは PowerShell 7 を使う（方針）
 
-このリポジトリでは **PowerShellを使わない**（手順を統一するため）。
+このリポジトリでは **PowerShell 7（x64）** に手順を統一する。
 
-VSCodeで cmd を開く：
+VSCodeで PowerShell 7 を開く：
 
 - メニュー：`Terminal` → `New Terminal`
-- 右上の `▼`（プロファイル）→ `Command Prompt` を選ぶ
+- 右上の `▼`（プロファイル）→ `PowerShell` / `PowerShell 7` を選ぶ
 
-> ※ すでに PowerShell が開いている場合は、そのターミナルは閉じてOK。
+既定にする（おすすめ）：
+
+- `Ctrl + Shift + P` → `Terminal: Select Default Profile` → `PowerShell` / `PowerShell 7`
+
+> 見分け方：プロンプトが `PS C:\...>` なら PowerShell。
 
 ### 4) 仮想環境（.venv）に入る（必須）
 
 このプロジェクトは `.venv` を使う。
 
-- ルート（`C:\dev\sales-graph-tool`）で：
-  - `\.venv\Scripts\activate.bat`
+リポジトリ直下（例：`C:\dev\sales-graph-tool`）で：
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
 
 成功すると、プロンプトの先頭に `(.venv)` が付く。
 
 #### .venv が無い場合（初回だけ）
 
-- ルートで：
-  - `python -m venv .venv`
-  - `\.venv\Scripts\activate.bat`
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
 
 ### 5) VSCodeのPythonが .venv になっているか
 
@@ -71,7 +80,8 @@ VSCodeで cmd を開く：
 
 ### 5) 仕様変更は先にドキュメント
 
-- 仕様が変わるなら `SPEC.md` / `ssot/決定事項ログ.md` を先に更新してからコード
+- 仕様が変わるなら `SPEC.md` を先に更新してからコード
+- READMEは発表用の要約（概要・図・実行手順の入口）
 
 ---
 
@@ -93,16 +103,23 @@ VSCodeで cmd を開く：
 
 ### 4) 次回やることを1行メモ（任意）
 
-- `ssot/決定事項ログ.md` の末尾に「次：◯◯」と1行だけ残す
+おすすめの置き場所（どちらかに統一）：
+
+- READMEの末尾に `Next: ...` を1行追加
+- もしくは、この `WORKFLOW.md` の末尾に `Next: ...` を1行追加
 
 ---
 
 ## 仮想環境の出入り（覚えるのはこれだけ）
 
-### 入る（cmd）
+### 入る（PowerShell）
 
-- `\.venv\Scripts\activate.bat`
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
 
 ### 抜ける（共通）
 
-- `deactivate`
+```powershell
+deactivate
+```
