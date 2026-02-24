@@ -72,12 +72,14 @@ git clone <your-repo-url>
 cd sales-graph-tool
 ```
 
-### 5.2 仮想環境（.venv）作成・有効化（Windows / cmd）
+### 5.2 仮想環境（.venv）作成・有効化（Windows / PowerShell 7）
 
-```bat
+```powershell
 python -m venv .venv
-.\.venv\Scripts\activate.bat
+.\.venv\Scripts\Activate.ps1
 ```
+
+> ※ `Activate.ps1` が実行できない場合は、PowerShellの実行ポリシー設定が原因のことがあります（学校PCの制限等）。その場合はWORKFLOW.mdを参照してください。
 
 ### 5.3 依存インストール
 
