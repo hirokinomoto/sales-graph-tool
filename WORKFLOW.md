@@ -1,4 +1,3 @@
-
 # 作業ルール（毎回これを見る）
 
 このリポジトリは「自宅PC／訓練校PC」で同じ作業をする前提。
@@ -18,23 +17,33 @@
 
 - `git pull`
 
-### 3) 仮想環境（.venv）に入る（必須）
+### 3) ターミナルは cmd（コマンドプロンプト）を使う（方針）
+
+このリポジトリでは **PowerShellを使わない**（手順を統一するため）。
+
+VSCodeで cmd を開く：
+
+- メニュー：`Terminal` → `New Terminal`
+- 右上の `▼`（プロファイル）→ `Command Prompt` を選ぶ
+
+> ※ すでに PowerShell が開いている場合は、そのターミナルは閉じてOK。
+
+### 4) 仮想環境（.venv）に入る（必須）
 
 このプロジェクトは `.venv` を使う。
 
-#### PowerShell（VSCodeのターミナルがPowerShellのとき）
-
 - ルート（`C:\dev\sales-graph-tool`）で：
-  - `.\.venv\Scripts\Activate.ps1`
-
-#### コマンドプロンプト（cmd）のとき
-
-- ルートで：
-  - `.\.venv\Scripts\activate`
+  - `\.venv\Scripts\activate.bat`
 
 成功すると、プロンプトの先頭に `(.venv)` が付く。
 
-### 4) VSCodeのPythonが .venv になっているか
+#### .venv が無い場合（初回だけ）
+
+- ルートで：
+  - `python -m venv .venv`
+  - `\.venv\Scripts\activate.bat`
+
+### 5) VSCodeのPythonが .venv になっているか
 
 - 右下のPython（Interpreter）が `.venv` を指していること
 - 違うとき：
@@ -90,13 +99,9 @@
 
 ## 仮想環境の出入り（覚えるのはこれだけ）
 
-### 入る（PowerShell）
-
-- `.\.venv\Scripts\Activate.ps1`
-
 ### 入る（cmd）
 
-- `.\.venv\Scripts\activate`
+- `\.venv\Scripts\activate.bat`
 
 ### 抜ける（共通）
 
