@@ -1,5 +1,7 @@
 # sales-graph-tool
 
+実行：`python src/app.py`
+
 CSVを選択すると、`category`別に `amount`を合計し、棒グラフで可視化する **最小版ポートフォリオ** です。（目的：未経験→データアナリスト転職に向けた “動く最小成果物” を優先）
 
 - ✅ CSV選択 → 読み込み → 集計 → グラフ表示（Tkinter）
