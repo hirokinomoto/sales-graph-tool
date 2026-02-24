@@ -90,7 +90,7 @@ pip install -r requirements.txt
 例：
 
 ```bash
-python main.py
+python src/app.py
 ```
 
 > ※ 実際のエントリポイント（`main.py` / `app.py` 等）はあなたの構成に合わせて修正してください。
